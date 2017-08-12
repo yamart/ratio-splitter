@@ -1,0 +1,29 @@
+@import 'ratio-splitter';
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;    
+}
+
+#container, .app-component {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.content {
+    display: block;
+    height: auto;
+    min-height: 100%;
+    padding: 30px;
+    background: #f3f1f1;
+}
