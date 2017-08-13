@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom'; 
 
 interface RatioSplitterState {
-    minWidthReached:boolean;
+    minWidthReached?:boolean;
+    fullWidthReached?:boolean;
 }
 
 interface RatioSplitterProps {
@@ -15,6 +16,7 @@ interface RatioSplitterProps {
 
 class RatioSplitter extends React.Component<RatioSplitterProps,RatioSplitterState> {
     el:HTMLDivElement;
+    parentEl:HTMLDivElement;
     sideEl:HTMLDivElement;
     contentEl:HTMLDivElement;
     prevHeight:number;
@@ -25,12 +27,14 @@ class RatioSplitter extends React.Component<RatioSplitterProps,RatioSplitterStat
         this.onResize = this.onResize.bind(this);
         this.prevHeight = 0;
         this.state = {
-            minWidthReached: false
+            minWidthReached: false,
+            fullWidthReached: false
         }
     }
 
     componentDidMount() {
         this.el = this.refs['rs-el'] as HTMLDivElement;
+        this.parentEl = this.el.parentElement as HTMLDivElement;
         this.sideEl = this.refs['rs-side'] as HTMLDivElement;
         this.contentEl = this.refs['rs-content'] as HTMLDivElement;
 
@@ -43,11 +47,20 @@ class RatioSplitter extends React.Component<RatioSplitterProps,RatioSplitterStat
             this.reset();
         }
 
+        if(this.state.fullWidthReached) {
+            this.reset();
+        } else {
+            this.onResize();
+        }
+
         if(prevProps.ratio !== this.props.ratio || 
            prevProps.sideContent !== this.props.sideContent ||
            prevProps.contentMinWidth !== this.props.contentMinWidth) {
             this.onResize();
         }
+
+        document.body.setAttribute('rs-width-reached',this.state.minWidthReached+'');
+        document.body.setAttribute('rs-active',(this.props.active && !this.state.fullWidthReached)+'');        
     }   
 
     onResize() {
@@ -59,48 +72,39 @@ class RatioSplitter extends React.Component<RatioSplitterProps,RatioSplitterStat
 
     setSpacing() {
         let ratio = this.props.ratio,
-            el = this.el,
-            w = this.el.clientWidth,
-            h = window.innerHeight,
+            el = this.parentEl,
+            w = el.clientWidth,
+            h = el.clientHeight,
             sideWidth = w - h*ratio;
-        
-        if(this.minWidthReached(sideWidth)) 
+
+        this.minWidthReached(sideWidth);
+
+        if(this.fullWidthReached(sideWidth))
             return;
 
         if(h !== this.prevHeight) {
             this.prevHeight = h;
             this.contentEl.style.marginLeft = (h*ratio) + 'px';
         }
-
-        this.fullWidthReached(sideWidth);
     }
 
     minWidthReached(sideWidth:number) {
-        if(this.props.contentMinWidth && sideWidth < this.props.contentMinWidth) {
-            if(!this.state.minWidthReached) {
-                this.reset();
-                this.setState({ minWidthReached: true });
-            }
-            return true;
+        if(this.props.contentMinWidth && sideWidth < this.props.contentMinWidth && !this.state.fullWidthReached) {
+            !this.state.minWidthReached && this.setState({ minWidthReached: true });
         } else {
             this.state.minWidthReached && this.setState({ minWidthReached: false });
-            return false;
         }
     }
 
     fullWidthReached(sideWidth:number) {
-        let el = this.el;
-        if(sideWidth <= 0) {
-            !el.hasAttribute('data-full-width') && el.setAttribute('data-full-width','true');
-        } else if(el.getAttribute('data-full-width') == 'true') {
-            el.removeAttribute('data-full-width');
-        }
+        let fwr = sideWidth <= 0;
+        fwr !== this.state.fullWidthReached && this.setState({ fullWidthReached: fwr });
+        return fwr;
     }
 
     reset() {
         this.prevHeight = 0;
         this.contentEl.style.marginLeft = '';
-        this.el.removeAttribute('data-full-width');
     }
 
     render() {
@@ -108,9 +112,15 @@ class RatioSplitter extends React.Component<RatioSplitterProps,RatioSplitterStat
             props = this.props;
         
         return (
-            <div className='ratio-splitter' ref='rs-el' data-active={props.active && !state.minWidthReached} data-alternative={props.alternative}>
+            <div className='ratio-splitter' 
+                 ref='rs-el' 
+                 data-active={props.active && !state.fullWidthReached} 
+                 data-width-reached={state.minWidthReached} 
+                 data-alternative={props.alternative}>
+
                 <div className='rs-side' ref='rs-side'>{ props.sideContent }</div>
                 <div className='rs-content' ref='rs-content'>{ props.children }</div>
+
             </div>
         );
     }

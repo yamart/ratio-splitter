@@ -30,6 +30,12 @@
         }
     }
 
+    &[data-width-reached="true"] {
+        .rs-content {
+            display: none;
+        }
+    }
+
     &[data-active="false"] {
         &[data-alternative="card"] {
             .rs-side {
@@ -68,6 +74,8 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
+                overflow: auto;
+                background: rgba(white,.7);
             }            
         }
     }

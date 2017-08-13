@@ -1,4 +1,5 @@
 @import 'ratio-splitter';
+@import 'vertical-alignment';
 
 html, body {
     width: 100%;
@@ -22,8 +23,5 @@ html, body {
 
 .content {
     display: block;
-    height: auto;
-    min-height: 100%;
     padding: 30px;
-    background: #f3f1f1;
 }

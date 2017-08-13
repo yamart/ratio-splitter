@@ -1,0 +1,9 @@
+.va-container {
+    display: table;
+    height: 100%;
+
+    .va-content {
+        display: table-cell;
+        vertical-align: middle;
+    }
+}
